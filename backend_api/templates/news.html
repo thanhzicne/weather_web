@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% block title %}Tin tức - Dự báo Thời tiết{% endblock %}
+
+{% block content %}
+<section id="page-news" class="bg-gradient-to-br from-[#87CEEB] via-[#AFD7E0] to-[#E6F0FA] dark:from-gray-800 dark:to-gray-900 min-h-screen py-8 animate-gradient">
+    <h1 class="text-3xl font-bold text-gray-800 dark:text-white mb-6 animate-fade-in">Tin tức Thời tiết & Môi trường</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {% if news_list %}
+            {% for item in news_list %}
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl weather-card animate-pop-in">
+                <div class="overflow-hidden">
+                    <img src="{{ item.image }}" alt="Ảnh {{ item.title }}" class="w-full h-48 object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy">
+                </div>
+                <div class="p-6">
+                    <span class="inline-block text-sm font-medium px-2 py-1 rounded-full bg-[#AFD7E0] dark:bg-[#FADBD8] text-gray-800 dark:text-white">{{ item.category }}</span>
+                    <h2 class="text-xl font-semibold text-gray-800 dark:text-white mt-2 mb-3">{{ item.title }}</h2>
+                    <a href="#" class="text-[#F9E79F] dark:text-[#FADBD8] font-medium hover:underline transition-colors">Đọc thêm &rarr;</a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="bg-white dark:bg-gray-800 p-6 rounded-lg md:col-span-3 text-center animate-fade-in">
+                <p class="text-gray-600 dark:text-gray-400">Không có tin tức nào để hiển thị.</p>
+            </div>
+        {% endif %}
+    </div>
+    <div class="text-center mt-6">
+        <button class="bg-[#F9E79F] dark:bg-[#FADBD8] text-gray-800 dark:text-gray-800 rounded-lg px-6 py-3 font-semibold hover:bg-[#FADBD8] dark:hover:bg-[#F9E79F] transition-all duration-300 animate-bounce-slow">Tải thêm</button>
+    </div>
+</section>
+{% endblock %}

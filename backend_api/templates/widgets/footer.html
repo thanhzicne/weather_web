@@ -1,0 +1,60 @@
+<footer class="mt-12 bg-gradient-to-br from-[#87CEEB] to-[#AFD7E0] text-gray-800 dark:bg-gradient-to-br from-gray-800 to-gray-900 dark:text-white">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+                <a href="{{ url_for('main_bp.route_home') }}" class="flex items-center group mb-4">
+                    <svg class="h-8 w-8 text-[#FADBD8] group-hover:scale-110 transition-transform duration-300" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+                    </svg>
+                    <span class="ml-2 text-xl font-bold text-gray-800 dark:text-white group-hover:text-[#FADBD8] transition-colors">WeatherVN</span>
+                </a>
+                <p class="text-sm">
+                    Cung cấp thông tin thời tiết chính xác và đáng tin cậy cho người dân Việt Nam.
+                </p>
+            </div>
+            <div>
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-white uppercase tracking-wider mb-4">Dịch vụ</h3>
+                <ul class="space-y-2">
+                    <li><a href="{{ url_for('forecast_bp.route_forecast') }}" class="hover:text-[#FADBD8] dark:hover:text-[#F9E79F] transition-colors">Dự báo thời tiết</a></li>
+                    <li><a href="{{ url_for('storm_bp.route_storm') }}" class="hover:text-[#FADBD8] dark:hover:text-[#F9E79F] transition-colors">Cảnh báo bão</a></li>
+                    <li><a href="#" class="hover:text-[#FADBD8] dark:hover:text-[#F9E79F] transition-colors">Bản đồ thời tiết</a></li>
+                    <li><a href="#" class="hover:text-[#FADBD8] dark:hover:text-[#F9E79F] transition-colors">API thời tiết</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-white uppercase tracking-wider mb-4">Thông tin</h3>
+                <ul class="space-y-2">
+                    <li><a href="#" class="hover:text-[#FADBD8] dark:hover:text-[#F9E79F] transition-colors">Về chúng tôi</a></li>
+                    <li><a href="#" class="hover:text-[#FADBD8] dark:hover:text-[#F9E79F] transition-colors">Liên hệ</a></li>
+                    <li><a href="#" class="hover:text-[#FADBD8] dark:hover:text-[#F9E79F] transition-colors">Chính sách bảo mật</a></li>
+                    <li><a href="#" class="hover:text-[#FADBD8] dark:hover:text-[#F9E79F] transition-colors">Điều khoản sử dụng</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-sm font-semibold text-gray-800 dark:text-white uppercase tracking-wider mb-4">Liên hệ</h3>
+                <ul class="space-y-3">
+                    <li class="flex items-center">
+                        <i data-lucide="phone" class="w-4 h-4 mr-2 text-[#F9E79F]"></i>
+                        <span>1900 1234</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i data-lucide="mail" class="w-4 h-4 mr-2 text-[#F9E79F]"></i>
+                        <span>info@weathervn.com</span>
+                    </li>
+                    <li class="flex items-center">
+                        <i data-lucide="map-pin" class="w-4 h-4 mr-2 text-[#F9E79F]"></i>
+                        <span>Hà Nội, Việt Nam</span>
+                    </li>
+                </ul>
+                <div class="mt-4 flex space-x-4">
+                    <a href="#" class="hover:text-[#FADBD8] dark:hover:text-[#F9E79F] transition-colors"><i data-lucide="facebook" class="w-5 h-5"></i></a>
+                    <a href="#" class="hover:text-[#FADBD8] dark:hover:text-[#F9E79F] transition-colors"><i data-lucide="twitter" class="w-5 h-5"></i></a>
+                </div>
+            </div>
+        </div>
+        <hr class="border-gray-300 dark:border-gray-700 my-8">
+        <div class="text-center text-sm text-gray-800 dark:text-gray-300">
+            &copy; 2021 WeatherVN. Tất cả quyền được bảo lưu.
+        </div>
+    </div>
+</footer>

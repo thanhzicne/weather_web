@@ -1,0 +1,28 @@
+<header class="bg-white shadow-sm sticky top-0 z-10">
+    <nav class="container mx-auto flex justify-between items-center py-4 px-4">
+        <a href="{{ url_for('main_bp.route_home') }}" class="flex items-center gap-2 text-blue-600 font-bold">
+            <i data-lucide="cloud-sun" class="w-6 h-6"></i>
+            <span>WeatherVN</span>
+        </a>
+        <div class="hidden md:flex space-x-6 text-gray-700">
+            <a href="{{ url_for('main_bp.route_home') }}" class="hover:text-blue-600">Trang chủ</a>
+            <a href="{{ url_for('forecast_bp.route_forecast') }}" class="hover:text-blue-600">Dự báo thời tiết</a>
+            <a href="{{ url_for('storm_bp.route_storm') }}" class="hover:text-blue-600">Dự báo bão</a>
+            <a href="{{ url_for('main_bp.route_news') }}" class="hover:text-blue-600">Tin tức</a>
+        </div>
+        <button id="menu-toggle" class="md:hidden">
+            <i data-lucide="menu" class="w-6 h-6 text-gray-700"></i>
+        </button>
+    </nav>
+    <div id="mobile-menu" class="md:hidden hidden bg-white border-t p-4 space-y-2">
+        <a href="{{ url_for('main_bp.route_home') }}" class="block hover:text-blue-600">Trang chủ</a>
+        <a href="{{ url_for('forecast_bp.route_forecast') }}" class="block hover:text-blue-600">Dự báo thời tiết</a>
+        <a href="{{ url_for('storm_bp.route_storm') }}" class="block hover:text-blue-600">Dự báo bão</a>
+        <a href="{{ url_for('main_bp.route_news') }}" class="block hover:text-blue-600">Tin tức</a>
+    </div>
+    <script>
+        document.getElementById('menu-toggle').addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+    </script>
+</header>

@@ -1,134 +1,722 @@
 {% extends "layout.html" %}
 {% block title %}Dự báo - Dự báo Thời tiết{% endblock %}
-
 {% block content %}
-<section id="page-forecast" class="bg-gradient-to-br from-[#87CEEB] via-[#AFD7E0] to-[#E6F0FA] dark:from-gray-800 dark:to-gray-900 min-h-screen py-8 animate-gradient">
-    <div class="bg-white/90 dark:bg-gray-800/90 p-6 rounded-xl shadow-lg mb-6 flex flex-col sm:flex-row items-center gap-4 weather-card animate-pop-in">
-        <span class="text-lg font-medium text-gray-800 dark:text-white">Chọn tỉnh thành:</span>
-        <select id="province-select" class="flex-grow bg-[#E6F0FA] dark:bg-gray-700 border border-[#AFD7E0] dark:border-gray-600 text-gray-800 dark:text-white rounded-lg p-2.5 focus:ring-2 focus:ring-[#F9E79F] dark:focus:ring-[#FADBD8] transition-all duration-300">
-            <option value="">Đang tải danh sách tỉnh từ API...</option>
-        </select>
-        <button id="geolocate-btn" class="w-full sm:w-auto bg-[#F9E79F] dark:bg-[#FADBD8] hover:bg-[#FADBD8] dark:hover:bg-[#F9E79F] text-gray-800 dark:text-gray-800 font-medium rounded-lg px-5 py-2.5 flex items-center justify-center gap-2 transition-all duration-300 animate-pulse-slow">
-            <i data-lucide="map-pin" class="w-4 h-4"></i>
-            <span>Dùng vị trí của tôi</span>
-        </button>
-    </div>
-    
-    <div id="loading-spinner" class="text-center py-10 hidden">
-        <svg class="animate-spin-slow h-12 w-12 text-[#AFD7E0] dark:text-[#FADBD8] mx-auto glow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-        </svg>
-    </div>
-    
-    <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-4 animate-fade-in" id="forecast-location">Dự báo cho...</h2>
-    <div id="daily-forecast-container" class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-7 gap-3 mb-6"></div>
-    <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-4 animate-fade-in">Biểu đồ chi tiết (48h tới)</h2>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div class="bg-[#E6F0FA] dark:bg-gray-700 p-4 rounded-lg shadow-lg animate-slide-right"><canvas id="chart-temp-humidity"></canvas></div>
-        <div class="bg-[#E6F0FA] dark:bg-gray-700 p-4 rounded-lg shadow-lg animate-slide-left"><canvas id="chart-precipitation"></canvas></div>
-        <div class="bg-[#E6F0FA] dark:bg-gray-700 p-4 rounded-lg shadow-lg animate-slide-right"><canvas id="chart-wind"></canvas></div>
-        <div class="bg-[#E6F0FA] dark:bg-gray-700 p-4 rounded-lg shadow-lg animate-slide-left"><canvas id="chart-pressure"></canvas></div>
+<section id="page-forecast" class="min-h-screen py-8">
+    <div class="max-w-7xl mx-auto px-4">
+        <div class=" bg-[rgb(197 210 236 / 85%)] backdrop-blur-md rounded-3xl shadow-2xl p-6 mb-6 transform hover:scale-[1.01] transition-all duration-300">
+            <div class="flex flex-col md:flex-row items-center gap-4 mb-4">
+                <div class="flex items-center gap-3 flex-1">
+                    <div class="p-3 bg-gradient-to-br from-blue-400 to-blue-600 rounded-2xl shadow-lg">
+                        <i data-lucide="cloud-sun" class="w-8 h-8 text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Dự báo Thời tiết</h1>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Dự báo chính xác với AI</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 px-4 py-2 bg-[rgb(223_235_251_/95%)] dark:from-gray-700 dark:to-gray-600 rounded-xl">
+                    <i data-lucide="calendar-clock" class="w-4 h-4 text-blue-600 dark:text-blue-400"></i>
+                    <span class="text-sm font-medium text-dark-700 dark:text-dark-200" id="current-time"></span>
+                </div>
+            </div>
+        
+            <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1 relative">
+                    <i data-lucide="map-pin" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                    <select id="province-select" class="w-full pl-12 pr-4 py-4 bg-[rgb(223_235_251_/95%)] dark:from-gray-700 dark:to-gray-600 border-2 border-transparent hover:border-blue-300 focus:border-blue-500 dark:border-gray-600 text-gray-800 dark:text-dark rounded-2xl focus:outline-none transition-all duration-300 shadow-sm hover:shadow-md font-medium">
+                        <option value="">Đang tải danh sách tỉnh...</option>
+                    </select>
+                </div>
+                <button id="geolocate-btn" class="group bg-gradient-to-r from-yellow-400 to-orange-400 hover:from-yellow-500 hover:to-orange-500 text-white font-semibold rounded-2xl px-8 py-4 flex items-center justify-center gap-3 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    <i data-lucide="navigation" class="w-5 h-5 group-hover:rotate-45 transition-transform duration-300"></i>
+                    <span>Vị trí của tôi</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="loading-spinner" class="bg-blue-100/90 dark:bg-blue-900/70 backdrop-blur-md rounded-3xl shadow-xl p-6 mb-6 text-center hidden">
+            <div class="flex flex-col items-center gap-3">
+                <div class="relative">
+                    <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
+                    <i data-lucide="cloud" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-5 h-5 text-blue-600"></i>
+                </div>
+                <span class="text-gray-700 dark:text-gray-300 font-medium">Đang cập nhật dữ liệu thời tiết...</span>
+            </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="bg-[rgb(132_155_221_/70%)] backdrop-blur-md rounded-3xl shadow-2xl p-8 transform hover:scale-[1.02] transition-all duration-300">
+                <div class="flex items-center gap-2 mb-6">
+                    <i data-lucide="thermometer" class="w-5 h-5 text-blue-500"></i>
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-white" id="forecast-location">Thời tiết tại</h2>
+                </div>
+
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center gap-6">
+                        <div class="relative">
+                            <div class="absolute inset-0 bg-gradient-to-br from-yellow-200 to-orange-200 dark:from-yellow-600 dark:to-orange-600 rounded-full blur-2xl opacity-30"></div>
+                            <span class="relative text-7xl animate-bounce-slow" id="current-icon">🌤️</span>
+                        </div>
+                        <div>
+                            <div class="text-6xl font-bold bg-gradient-to-br from-blue-600 to-purple-600 bg-clip-text text-transparent" id="current-temp">--°</div>
+                            <div class="text-dark-600 dark:text-dark-400 text-sm mt-2 font-medium" id="feels-like">Cảm giác như --°</div>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-lg font-semibold text-gray-700 dark:text-dark-300 bg-[rgb(223_235_251_/95%)] px-4 py-2 rounded-xl" id="weather-type">--</div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="text-center p-4 bg-[rgb(223_235_251_/95%)] dark:from-gray-700 dark:to-gray-600 rounded-2xl hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+                        <i data-lucide="droplets" class="w-8 h-8 text-blue-500 mx-auto mb-2"></i>
+                        <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">Độ ẩm</div>
+                        <div class="text-lg font-bold text-gray-800 dark:text-dark" id="humidity">--%</div>
+                    </div>
+                    <div class="text-center p-4 bg-[rgb(223_235_251_/95%)] dark:from-gray-700 dark:to-gray-600 rounded-2xl hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+                        <i data-lucide="wind" class="w-8 h-8 text-green-500 mx-auto mb-2"></i>
+                        <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">Gió</div>
+                        <div class="text-lg font-bold text-gray-800 dark:text-dark" id="wind-speed">--</div>
+                    </div>
+                    <div class="text-center p-4 bg-[rgb(223_235_251_/95%)] dark:from-gray-700 dark:to-gray-600 rounded-2xl hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+                        <i data-lucide="eye" class="w-8 h-8 text-purple-500 mx-auto mb-2"></i>
+                        <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">Tầm nhìn</div>
+                        <div class="text-lg font-bold text-gray-800 dark:text-dark" id="visibility">--</div>
+                    </div>
+                    <div class="text-center p-4 bg-[rgb(223_235_251_/95%)] dark:from-gray-700 dark:to-gray-600 rounded-2xl hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+                        <div class="text-3xl mb-2">🌡️</div>
+                        <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">Áp suất</div>
+                        <div class="text-lg font-bold text-gray-800 dark:text-dark" id="pressure">--</div>
+                    </div>
+                    <div class="text-center p-4 bg-[rgb(223_235_251_/95%)] dark:from-gray-700 dark:to-gray-600 rounded-2xl hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+                        <i data-lucide="sun" class="w-8 h-8 text-yellow-500 mx-auto mb-2"></i>
+                        <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">UV</div>
+                        <div class="text-lg font-bold text-gray-800 dark:text-dark" id="uv-index">--</div>
+                    </div>
+                    <div class="text-center p-4 bg-[rgb(223_235_251_/95%)] dark:from-gray-700 dark:to-gray-600 rounded-2xl hover:shadow-md transition-all duration-300 transform hover:-translate-y-1">
+                        <i data-lucide="cloud-rain" class="w-8 h-8 text-blue-500 mx-auto mb-2"></i>
+                        <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">Mưa</div>
+                        <div class="text-lg font-bold text-gray-800 dark:text-dark" id="precipitation">--</div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gradient-to-br from-orange-400 via-pink-500 to-purple-600 rounded-3xl shadow-2xl p-8 text-white transform hover:scale-[1.02] transition-all duration-300 relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl"></div>
+                <div class="absolute bottom-0 left-0 w-48 h-48 bg-yellow-300/20 rounded-full blur-3xl"></div>
+            
+                <div class="relative z-10">
+                    <div class="flex items-center gap-2 mb-6">
+                        <i data-lucide="sunrise" class="w-5 h-5"></i>
+                        <h3 class="text-xl font-bold">Bình minh / Hoàng hôn</h3>
+                    </div>
+                    <div class="flex justify-around items-center mb-8">
+                        <div class="text-center transform hover:scale-110 transition-transform duration-300">
+                            <div class="text-5xl mb-3">🌅</div>
+                            <div class="text-sm opacity-90 mb-1">Bình minh</div>
+                            <div class="text-3xl font-bold drop-shadow-lg" id="sunrise-time">--</div>
+                        </div>
+                        <div class="h-20 w-px bg-white/30"></div>
+                        <div class="text-center transform hover:scale-110 transition-transform duration-300">
+                            <div class="text-5xl mb-3">🌇</div>
+                            <div class="text-sm opacity-90 mb-1">Hoàng hôn</div>
+                            <div class="text-3xl font-bold drop-shadow-lg" id="sunset-time">--</div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-white/20 backdrop-blur-xl rounded-2xl p-6 border border-white/30">
+                        <div class="flex items-center gap-2 mb-4">
+                            <i data-lucide="thermometer" class="w-5 h-5"></i>
+                            <h4 class="font-semibold text-lg">Nhiệt độ trong ngày</h4>
+                        </div>
+                        <div class="grid grid-cols-4 gap-3">
+                            <div class="text-center">
+                                <div class="text-4xl mb-2">☀️</div>
+                                <div class="text-sm opacity-90 mb-1">Ngày</div>
+                                <div class="text-lg font-bold drop-shadow-lg" id="day-temp">--°/--°</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-4xl mb-2">🌙</div>
+                                <div class="text-sm opacity-90 mb-1">Đêm</div>
+                                <div class="text-lg font-bold drop-shadow-lg" id="night-temp">--°/--°</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-4xl mb-2">🌅</div>
+                                <div class="text-sm opacity-90 mb-1">Sáng</div>
+                                <div class="text-lg font-bold drop-shadow-lg" id="morning-temp">--°/--°</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-4xl mb-2">🌆</div>
+                                <div class="text-sm opacity-90 mb-1">Tối</div>
+                                <div class="text-lg font-bold drop-shadow-lg" id="evening-temp">--°/--°</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="bg-[rgb(132_155_221_/70%)] backdrop-blur-md rounded-3xl shadow-2xl p-8 mb-6">
+            <div class="flex items-center gap-2 mb-6">
+                <i data-lucide="clock" class="w-5 h-5 text-blue-500"></i>
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Dự báo theo giờ (24h tới)</h2>
+            </div>
+            <div id="hourly-forecast-container" class="overflow-x-auto scrollbar-modern">
+                <div class="flex gap-4 pb-4">
+            </div>
+            </div>
+        </div>
+        <div id="ml-notice" class="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 border-l-4 border-purple-500 rounded-2xl p-6 mb-6 hidden backdrop-blur-sm shadow-lg">
+            <!-- <div class="flex items-center gap-4">
+                <div class="text-4xl">🤖</div>
+                <div class="flex-1">
+                    <div class="font-bold text-purple-800 dark:text-purple-200 text-lg mb-1">Dữ liệu được dự đoán bằng AI/ML</div>
+                    <div class="text-sm text-purple-700 dark:text-purple-300">
+                        Dữ liệu được dự đoán bằng thuật toán máy học dựa trên lịch sử thời tiết (Được đánh dấu 🤖 trong biểu đồ giờ).
+                    </div>
+                </div>
+                <i data-lucide="sparkles" class="w-6 h-6 text-purple-600 dark:text-purple-400"></i>
+            </div> -->
+        </div> 
+        
+        <div class="bg-[rgb(132_155_221_/70%)] backdrop-blur-md rounded-3xl shadow-2xl p-8 mb-6">
+            <div class="flex items-center gap-2 mb-6">
+                <i data-lucide="calendar-days" class="w-5 h-5 text-blue-500"></i>
+                <h2 class="text-2xl font-bold text-gray-800 dark:text-white">Dự báo 7 ngày tới</h2>
+            </div>
+            <div id="daily-forecast-container" class="space-y-4"></div>
+        </div>
+        <div class="bg-[rgb(132_155_221_/70%)] backdrop-blur-md rounded-3xl shadow-2xl p-8 mb-6">
+            <div class="flex items-center gap-2 mb-6">
+                <i data-lucide="bar-chart-3" class="w-6 h-6 text-blue-500"></i>
+                <h2 class="text-3xl font-bold text-gray-800 dark:text-white">Biểu đồ chi tiết (48h tới)</h2>
+            </div>
+        
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="bg-[rgb(223_235_251_/95%)] backdrop-blur-md p-8 rounded-3xl shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="thermometer-sun" class="w-5 h-5 text-orange-500"></i>
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-dark">Nhiệt độ & Độ ẩm</h3>
+                    </div>
+                    <div style="height: 300px; position: relative;">
+                        <div style="height: 300px; position: relative;">
+                            <canvas id="chart-temp-humidity"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-[rgb(223_235_251_/95%)] backdrop-blur-md p-8 rounded-3xl shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="cloud-drizzle" class="w-5 h-5 text-blue-500"></i>
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-dark">Lượng mưa</h3>
+                    </div>
+                        <div style="height: 300px; position: relative;">
+                            <canvas id="chart-precipitation"></canvas>
+                        </div>
+                </div>
+                <div class="bg-[rgb(223_235_251_/95%)] backdrop-blur-md p-8 rounded-3xl shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="wind" class="w-5 h-5 text-green-500"></i>
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-dark">Tốc độ gió</h3>
+                    </div>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="chart-wind"></canvas>
+                    </div>
+                </div>
+                <div class="bg-[rgb(223_235_251_/95%)] backdrop-blur-md p-8 rounded-3xl shadow-2xl transform hover:scale-[1.02] transition-all duration-300">
+                    <div class="flex items-center gap-2 mb-4">
+                        <i data-lucide="gauge" class="w-5 h-5 text-purple-500"></i>
+                        <h3 class="text-lg font-bold text-gray-800 dark:text-dark">Áp suất</h3>
+                    </div>
+                    <div style="height: 300px; position: relative;">
+                        <canvas id="chart-pressure"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </section>
+<style>
+    .scrollbar-hide::-webkit-scrollbar { display: none; }
+    .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+    @keyframes bounce-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+    .animate-bounce-slow { animation: bounce-slow 3s ease-in-out infinite; }
+</style>
 {% endblock %}
-
 {% block scripts %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
 <script>
+    let selectedDays = 7;
+    let charts = {};
+    let currentForecastData = null;
     document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
         initForecastPage();
+        updateCurrentTime();
+        setInterval(updateCurrentTime, 1000);
     });
 
+    function updateCurrentTime() {
+        const now = new Date();
+        document.getElementById('current-time').textContent = now.toLocaleString('vi-VN', {
+            weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+        });
+    }
+
     async function initForecastPage() {
-        // Load provinces
+        await loadProvinces();
+        document.getElementById('geolocate-btn').addEventListener('click', getUserLocation);
         const provinceSelect = document.getElementById('province-select');
-        const response = await fetch('/api/provinces');
-        const provinces = await response.json();
-        provinceSelect.innerHTML = '<option value="">Chọn tỉnh...</option>';
-        provinces.forEach(p => {
-            const option = document.createElement('option');
-            option.value = p.name;
-            option.textContent = p.name;
-            provinceSelect.appendChild(option);
+        provinceSelect.addEventListener('change', (e) => {
+            if (e.target.value) loadForecast(e.target.value);
         });
 
-        // Geolocate
-        document.getElementById('geolocate-btn').addEventListener('click', getUserLocation);
-        loadForecast(provinceSelect.value || 'Hà Nội');
+        // 2. Dự báo mặc định bằng định vị (thay vì mặc định 'Hà Nội')
+        await getUserLocation(); 
+        
+        // Nếu không lấy được vị trí, mặc định là Hà Nội (hoặc tỉnh đầu tiên trong list)
+        if (!provinceSelect.value) {
+            const defaultProvince = provinceSelect.options.length > 1 ? provinceSelect.options[1].value : 'Hà Nội';
+            provinceSelect.value = defaultProvince;
+            loadForecast(defaultProvince);
+        }
+    }
 
-        provinceSelect.addEventListener('change', (e) => loadForecast(e.target.value));
+    async function loadProvinces() {
+        try {
+            const response = await fetch('/api/provinces');
+            const provinces = await response.json();
+            const provinceSelect = document.getElementById('province-select');
+            provinceSelect.innerHTML = '<option value="">Chọn tỉnh thành...</option>';
+            provinces.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.name;
+                option.textContent = p.name;
+                provinceSelect.appendChild(option);
+            });
+        } catch (error) {
+            console.error('Error loading provinces:', error);
+            alert('Không thể tải danh sách tỉnh thành');
+        }
     }
 
     async function getUserLocation() {
-        if (navigator.geolocation) {
-            document.getElementById('loading-spinner').classList.remove('hidden');
-            navigator.geolocation.getCurrentPosition(async (position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-                const geoResponse = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&addressdetails=1`);
-                const geoData = await geoResponse.json();
-                const province = geoData.address?.state || 'Hà Nội';
-                loadForecast(province);
-            }, () => loadForecast('Hà Nội'));
+        if (!navigator.geolocation) {
+            alert('Trình duyệt không hỗ trợ định vị');
+            return;
+        }
+        document.getElementById('loading-spinner').classList.remove('hidden');
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                try {
+                    const { latitude, longitude } = position.coords;
+                    console.log('Vị trí hiện tại:', latitude, longitude);
+                
+                    // Lấy danh sách tỉnh từ database
+                    const provincesResponse = await fetch('/api/provinces');
+                    const provinces = await provincesResponse.json();
+                
+                    // Tìm tỉnh gần nhất dựa trên khoảng cách
+                    let nearestProvince = null;
+                    let minDistance = Infinity;
+                
+                    provinces.forEach(province => {
+                        const distance = calculateDistance(
+                            latitude,
+                            longitude,
+                            province.latitude,
+                            province.longitude
+                        );
+                        if (distance < minDistance) {
+                            minDistance = distance;
+                            nearestProvince = province;
+                        }
+                    });
+                
+                    if (nearestProvince) {
+                        console.log('Tỉnh gần nhất:', nearestProvince.name, 'Khoảng cách:', minDistance.toFixed(2), 'km');
+                        document.getElementById('province-select').value = nearestProvince.name;
+                        loadForecast(nearestProvince.name);
+                    } else {
+                        alert('Không thể xác định tỉnh thành');
+                        document.getElementById('loading-spinner').classList.add('hidden');
+                    }
+                } catch (error) {
+                    console.error('Geolocation error:', error);
+                    alert('Không thể lấy vị trí của bạn');
+                    document.getElementById('loading-spinner').classList.add('hidden');
+                }
+            },
+            (error) => {
+                console.error('Geolocation error:', error);
+                // Nếu người dùng từ chối hoặc lỗi, vẫn ẩn loading và để logic initForecastPage xử lý mặc định
+                document.getElementById('loading-spinner').classList.add('hidden');
+                // Báo lỗi nhẹ
+                console.log('Không thể lấy vị trí, sẽ sử dụng vị trí mặc định.');
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 0
+            }
+        );
+    }
+
+// Hàm tính khoảng cách giữa 2 điểm (Haversine formula)
+function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Bán kính Trái Đất (km)
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+}
+
+function toRad(degrees) {
+    return degrees * Math.PI / 180;
+}
+    let isLoading = false;
+    async function loadForecast(province) {
+        if (isLoading) return;
+        isLoading = true;
+        document.getElementById('loading-spinner').classList.remove('hidden');
+        try {
+            const response = await fetch(`/api/forecast?province=${province}&days=${selectedDays}`);
+            const data = await response.json();
+            
+            // Lưu trữ tên tỉnh/thành phố
+            data.location = province;
+
+            renderCurrentWeather(data);
+            renderHourlyForecast(data); 
+            renderDailyForecast(data);
+            renderCharts(data);
+        } catch (error) {
+            console.error('Error loading forecast:', error);
+        } finally {
+            document.getElementById('loading-spinner').classList.add('hidden');
+            lucide.createIcons();
+            isLoading = false;
         }
     }
 
-    async function loadForecast(province) {
-        document.getElementById('loading-spinner').classList.remove('hidden');
-        document.getElementById('daily-forecast-container').innerHTML = '';
-        document.getElementById('forecast-location').textContent = `Dự báo cho ${province}`;
+    function renderCurrentWeather(data) {
+        // 1. Thêm tỉnh đang dự đoán vào tiêu đề
+        document.getElementById('forecast-location').textContent = `Thời tiết tại ${data.location}`;
+
+        const current = data.current || {};
+        const daily = data.daily || {};
         
-        const response = await fetch(`/api/forecast?province=${province}`);
-        const data = await response.json();
-        document.getElementById('loading-spinner').classList.add('hidden');
+        // Update current weather
+        document.getElementById('current-temp').textContent = `${Math.round(current.temperature_2m || 0)}°`;
+        document.getElementById('feels-like').textContent = `Cảm giác như ${Math.round(current.apparent_temperature || current.temperature_2m || 0)}°`;
+        document.getElementById('weather-type').textContent = getWeatherType(current.weather_code);
+        document.getElementById('current-icon').textContent = getWeatherIcon(current.weather_code);
+        document.getElementById('humidity').textContent = `${Math.round(current.relative_humidity_2m || 0)}%`;
+        document.getElementById('wind-speed').textContent = `${(current.wind_speed_10m || 0).toFixed(1)} km/h`;
+        document.getElementById('visibility').textContent = `${((current.visibility || 0) / 1000).toFixed(1)} km`;
+        document.getElementById('pressure').textContent = `${Math.round(current.pressure_msl || 0)} hPa`;
+        document.getElementById('uv-index').textContent = (current.uv_index || 0).toFixed(1);
+        document.getElementById('precipitation').textContent = `${(current.precipitation || 0).toFixed(1)} mm`;
 
-        if (data.error) {
-            console.error(data.error);
-            return;
+        // Update sunrise/sunset
+        if (daily.sunrise && daily.sunset && daily.sunrise[0] && daily.sunset[0]) {
+            const sunrise = new Date(daily.sunrise[0]).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            const sunset = new Date(daily.sunset[0]).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('sunrise-time').textContent = sunrise;
+            document.getElementById('sunset-time').textContent = sunset;
         }
 
-        // Daily forecast (7 days)
-        const daily = data.daily;
-        const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
-        for (let i = 0; i < 7; i++) {
-            const dayCard = document.createElement('div');
-            dayCard.className = 'weather-card p-4 text-center animate-pop-in';
-            dayCard.innerHTML = `
-                <img src="/static/images/sun-icon.png" class="weather-icon w-12 h-12 mx-auto">
-                <p class="font-bold text-gray-800 dark:text-white">${days[(new Date(daily.time[i]).getDay() + 6) % 7]}</p>
-                <p class="text-gray-600 dark:text-gray-300">${daily.temperature_2m_min[i]}°C - ${daily.temperature_2m_max[i]}°C</p>
+        // Cập nhật Nhiệt độ trong ngày (Giữ nguyên logic cũ)
+        const hourly = data.hourly || {};
+        const times = hourly.time?.slice(0, 24) || [];
+        const temps = hourly.temperature_2m?.slice(0, 24) || [];
+
+        let [dayMax, dayMin] = calcTempRange(12, 18, times, temps);
+        document.getElementById('day-temp').textContent = `${Math.round(dayMax)}°/${Math.round(dayMin)}°`;
+
+        let [nightMax, nightMin] = calcTempRange(0, 6, times, temps);
+        document.getElementById('night-temp').textContent = `${Math.round(nightMax)}°/${Math.round(nightMin)}°`;
+
+        let [morningMax, morningMin] = calcTempRange(6, 12, times, temps);
+        document.getElementById('morning-temp').textContent = `${Math.round(morningMax)}°/${Math.round(morningMin)}°`;
+
+        let [eveningMax, eveningMin] = calcTempRange(18, 24, times, temps);
+        document.getElementById('evening-temp').textContent = `${Math.round(eveningMax)}°/${Math.round(eveningMin)}°`;
+    }
+
+    function renderHourlyForecast(data) {
+        const container = document.getElementById('hourly-forecast-container').firstElementChild;
+        container.innerHTML = '';
+        const hourly = data.hourly || {};
+        const times = hourly.time || [];
+        const mlNotice = document.getElementById('ml-notice');
+        
+        // Hiển thị thông báo ML nếu dự đoán ML được sử dụng
+        if (data.ml_prediction && data.ml_prediction.predicted_temperature && data.ml_prediction.predicted_temperature.length > 0) {
+            mlNotice.classList.remove('hidden');
+        } else {
+            mlNotice.classList.add('hidden');
+        }
+    
+        const now = new Date();
+        // Lấy 24 giờ tiếp theo, bao gồm cả giờ hiện tại nếu có
+        const next24Hours = times.filter((time, i) => {
+            const hourDate = new Date(time);
+            return hourDate >= now; 
+        }).slice(0, 24);
+
+        next24Hours.forEach((time, i) => {
+            const hourDate = new Date(time);
+            
+            // Tìm index của thời gian này trong mảng hourly gốc (đã merge)
+            const hourlyIndex = hourly.time.indexOf(time); 
+            
+            // Kiểm tra xem dữ liệu này có phải là từ ML hay không
+            let isML = false;
+            
+            
+            const card = document.createElement('div');
+            card.className = 'flex-none w-32 p-4 bg-[rgb(223_235_251_/95%)] rounded-2xl text-center shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1';
+            
+            card.innerHTML = `
+                <div class="text-sm font-semibold text-gray-800 dark:text-dark mb-2">${hourDate.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</div>
+                <div class="text-3xl mb-2">${getWeatherIcon(hourly.weather_code?.[hourlyIndex])}</div>
+                <div class="text-lg font-bold text-gray-800 dark:text-dark">${Math.round(hourly.temperature_2m?.[hourlyIndex] || 0)}°${isML ? ' 🤖' : ''}</div>
+                <div class="text-xs text-gray-600 dark:text-gray-400 mt-1">${(hourly.precipitation?.[hourlyIndex] || 0).toFixed(1)} mm</div>
             `;
-            document.getElementById('daily-forecast-container').appendChild(dayCard);
-        }
+            container.appendChild(card);
+        });
+    }
 
-        // Charts (48h)
-        new Chart(document.getElementById('chart-temp-humidity'), {
+    function renderDailyForecast(data) {
+        const container = document.getElementById('daily-forecast-container');
+        container.innerHTML = '';
+        const daily = data.daily || {};
+        const times = daily.time || [];
+
+        times.forEach((time, i) => {
+            const date = new Date(time);
+            const dayName = getDayName(date);
+            const isToday = i === 0;
+            const card = document.createElement('div');
+            card.className = 'group flex items-center justify-between p-6 bg-[rgb(223_235_251_/95%)] rounded-2xl hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100 dark:border-gray-600';
+            card.innerHTML = `
+                <div class="flex items-center gap-5 flex-1">
+                    <div class="text-5xl group-hover:scale-110 transition-transform duration-300">${getWeatherIcon(daily.weather_code?.[i])}</div>
+                    <div>
+                        <div class="font-bold text-xl text-gray-800 dark:text-dark mb-1">
+                            ${isToday ? '🔵 Hôm nay' : dayName}, ${date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}
+                        </div>
+                        <div class="text-sm text-gray-600 dark:text-gray-400">${getWeatherType(daily.weather_code?.[i])}</div>
+                    </div>
+                </div>
+                <div class="flex items-center gap-8">
+                    <div class="text-center">
+                        <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">Nhiệt độ</div>
+                        <div class="text-lg font-bold text-gray-800 dark:text-dark">${Math.round(daily.temperature_2m_max?.[i] || 0)}° / ${Math.round(daily.temperature_2m_min?.[i] || 0)}°</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">Mưa</div>
+                        <div class="text-lg font-bold text-gray-800 dark:text-dark">${(daily.precipitation_sum?.[i] || 0).toFixed(1)} mm</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs text-gray-600 dark:text-gray-400 mb-1">Gió</div>
+                        <div class="text-lg font-bold text-gray-800 dark:text-dark">${(daily.wind_speed_10m_max?.[i] || 0).toFixed(1)} km/h</div>
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    }
+
+    function renderCharts(data) {
+        const hourly = data.hourly || {};
+        const times = (hourly.time || []).slice(0, 48); // Next 48 hours
+        const labels = times.map(time => new Date(time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }));
+
+        // Destroy existing charts if they exist
+        Object.values(charts).forEach(chart => chart.destroy());
+
+        // Temperature & Humidity Chart
+        charts.tempHumidity = new Chart(document.getElementById('chart-temp-humidity'), {
             type: 'line',
             data: {
-                labels: data.hourly.labels,
+                labels: labels,
                 datasets: [
-                    { label: 'Nhiệt độ (°C)', data: data.hourly.temperature_2m, borderColor: '#87CEEB', fill: false },
-                    { label: 'Độ ẩm (%)', data: data.hourly.relative_humidity_2m, borderColor: '#AFD7E0', fill: false }
+                    {
+                        label: 'Nhiệt độ (°C)',
+                        data: (hourly.temperature_2m || []).slice(0, 48),
+                        borderColor: '#f97316',
+                        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        yAxisID: 'y'
+                    },
+                    {
+                        label: 'Độ ẩm (%)',
+                        data: (hourly.relative_humidity_2m || []).slice(0, 48),
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4,
+                        yAxisID: 'y1'
+                    }
                 ]
             },
-            options: { responsive: true }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' }, tooltip: { mode: 'index', intersect: false } },
+                scales: {
+                    y: { position: 'left', title: { display: true, text: 'Nhiệt độ (°C)' }, min: 0, max: 40 }, // Thêm min/max
+                    y1: { position: 'right', title: { display: true, text: 'Độ ẩm (%)' }, grid: { drawOnChartArea: false }, min: 0, max: 100 },
+                    x: { title: { display: true, text: 'Thời gian' } }
+                }
+            }
         });
-        new Chart(document.getElementById('chart-precipitation'), {
+
+        // Precipitation Chart
+        charts.precipitation = new Chart(document.getElementById('chart-precipitation'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Lượng mưa (mm)',
+                    data: (hourly.precipitation || []).slice(0, 48),
+                    backgroundColor: '#3b82f6',
+                    borderColor: '#1d4ed8',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' }, tooltip: { mode: 'index', intersect: false } },
+                scales: {
+                    y: { beginAtZero: true, min: 0, max: 10, title: { display: true, text: 'Lượng mưa (mm)' } }, // Thêm min/max
+                    x: { title: { display: true, text: 'Thời gian' } }
+                }
+            }
+        });
+
+        // Wind Speed Chart
+        charts.wind = new Chart(document.getElementById('chart-wind'), {
             type: 'line',
-            data: { labels: data.hourly.labels, datasets: [{ label: 'Lượng mưa (mm)', data: data.hourly.precipitation, borderColor: '#F9E79F', fill: false }] },
-            options: { responsive: true }
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Tốc độ gió (km/h)',
+                    data: (hourly.wind_speed_10m || []).slice(0, 48),
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' }, tooltip: { mode: 'index', intersect: false } },
+                scales: {
+                    y: { beginAtZero: true, min: 0, max: 20, title: { display: true, text: 'Tốc độ gió (km/h)' } }, // Thêm min/max
+                    x: { title: { display: true, text: 'Thời gian' } }
+                }
+            }
         });
-        new Chart(document.getElementById('chart-wind'), {
+
+        // Pressure Chart
+        charts.pressure = new Chart(document.getElementById('chart-pressure'), {
             type: 'line',
-            data: { labels: data.hourly.labels, datasets: [{ label: 'Tốc độ gió (m/s)', data: data.hourly.wind_speed_10m, borderColor: '#FADBD8', fill: false }] },
-            options: { responsive: true }
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Áp suất (hPa)',
+                    data: (hourly.pressure_msl || []).slice(0, 48),
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'top' }, tooltip: { mode: 'index', intersect: false } },
+                scales: {
+                    y: { min: 900, max: 1100, title: { display: true, text: 'Áp suất (hPa)' } }, // Thêm min/max
+                    x: { title: { display: true, text: 'Thời gian' } }
+                }
+            }
         });
-        new Chart(document.getElementById('chart-pressure'), {
-            type: 'line',
-            data: { labels: data.hourly.labels, datasets: [{ label: 'Áp suất (hPa)', data: data.hourly.pressure_msl, borderColor: '#E6F0FA', fill: false }] },
-            options: { responsive: true }
+    }
+
+    // Hàm tính max/min temp cho khoảng giờ
+    function calcTempRange(start, end, times, temps) {
+        let tempsInRange = [];
+        times.forEach((time, i) => {
+            let hour = new Date(time).getHours();
+            if (start <= hour && hour < end) {
+                tempsInRange.push(temps[i]);
+            }
         });
+        if (tempsInRange.length > 0) {
+            return [Math.max(...tempsInRange), Math.min(...tempsInRange)];
+        }
+        return [0, 0];
+    }
+
+    function getWeatherIcon(code) {
+        const weatherIcons = {
+            0: '☀️', // Clear sky
+            1: '🌤️', // Mainly clear
+            2: '⛅', // Partly cloudy
+            3: '☁️', // Overcast
+            45: '🌫️', // Fog
+            48: '🌫️', // Depositing rime fog
+            51: '🌦️', // Light drizzle
+            53: '🌦️', // Moderate drizzle
+            55: '🌧️', // Dense drizzle
+            61: '🌧️', // Light rain
+            63: '🌧️', // Moderate rain
+            65: '⛈️', // Heavy rain
+            71: '❄️', // Light snow
+            73: '❄️', // Moderate snow
+            75: '🌨️', // Heavy snow
+            95: '⛈️', // Thunderstorm
+            96: '⛈️', // Thunderstorm with light hail
+            99: '⛈️'  // Thunderstorm with heavy hail
+        };
+        return weatherIcons[code] || '🌤️';
+    }
+
+    function getWeatherType(code) {
+        const weatherTypes = {
+            0: 'Trời quang',
+            1: 'Trời ít mây',
+            2: 'Trời mây rải rác',
+            3: 'Trời nhiều mây',
+            45: 'Sương mù',
+            48: 'Sương mù dày',
+            51: 'Mưa phùn nhẹ',
+            53: 'Mưa phùn vừa',
+            55: 'Mưa phùn dày',
+            61: 'Mưa nhẹ',
+            63: 'Mưa vừa',
+            65: 'Mưa to',
+            71: 'Tuyết nhẹ',
+            73: 'Tuyết vừa',
+            75: 'Tuyết dày',
+            95: 'Giông bão',
+            96: 'Giông bão kèm mưa đá nhẹ',
+            99: 'Giông bão kèm mưa đá nặng'
+        };
+        return weatherTypes[code] || 'Không xác định';
+    }
+
+    function getDayName(date) {
+        const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+        return days[date.getDay()];
     }
 </script>
 {% endblock %}

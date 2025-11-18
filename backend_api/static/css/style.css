@@ -188,3 +188,38 @@ body {
     box-shadow: 0 8px 30px rgba(56, 189, 248, 0.2);
     transform: translateY(-2px);
 }
+#province-select option {
+  color: black; /* màu chữ đen */
+  background-color: white; /* nền trắng nếu muốn rõ hơn */
+}
+
+/* ==================================================== */
+/* Modern Horizontal Scrollbar - Đậm, nổi bật */
+.scrollbar-modern::-webkit-scrollbar {
+    height: 10px;
+    background: transparent;
+}
+
+.scrollbar-modern::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.08); /* track nhẹ, làm nổi thumb */
+    border-radius: 12px;
+    margin: 2px 0;
+}
+
+.scrollbar-modern::-webkit-scrollbar-thumb {
+    background: linear-gradient(90deg, #1E3A8A, #3B82F6); /* gradient xanh đậm -> xanh sáng */
+    border-radius: 12px;
+    border: 2px solid rgba(0, 0, 0, 0.1); 
+    transition: background 0.3s, transform 0.2s;
+}
+
+.scrollbar-modern::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(90deg, #1E40AF, #60A5FA); /* đậm hơn khi hover */
+    transform: scaleY(1.2);
+}
+
+/* Firefox support */
+.scrollbar-modern {
+    scrollbar-width: thin;
+    scrollbar-color: #3B82F6 rgba(0, 0, 0, 0.08); /* thumb track */
+}

@@ -1,28 +1,153 @@
-<header class="bg-white shadow-sm sticky top-0 z-10">
-    <nav class="container mx-auto flex justify-between items-center py-4 px-4">
-        <a href="{{ url_for('main_bp.route_home') }}" class="flex items-center gap-2 text-blue-600 font-bold">
-            <i data-lucide="cloud-sun" class="w-6 h-6"></i>
-            <span>WeatherVN</span>
+<header class="bg-gradient-to-r from-blue-400/80 to-cyan-500/80 backdrop-blur-xl shadow-2xl sticky top-0 z-50 transition-all duration-300">
+    <nav class="container mx-auto flex justify-between items-center py-4 px-4 lg:px-8">
+        <a href="{{ url_for('main_bp.route_home') }}" class="flex items-center gap-2 text-white font-extrabold text-3xl tracking-tighter group transition-colors duration-300 hover:text-yellow-100">
+            <svg class="w-9 h-9 text-yellow-300 transform group-hover:scale-110 transition-transform duration-300" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4c-3.71 0-6.73 2.7-7.29 6.29C2.47 10.61 0 13.1 0 16c0 3.31 2.69 6 6 6h13c3.87 0 7-3.13 7-7 0-3.61-2.73-6.56-6.65-6.96zM12 20c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z" fill="url(#weather-gradient)"/>
+                <defs>
+                    <linearGradient id="weather-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:rgb(253, 230, 138);stop-opacity:1" /> <stop offset="100%" style="stop-color:rgb(255, 255, 255);stop-opacity:1" /> </linearGradient>
+                </defs>
+            </svg>
+            <span class="relative">
+                WeatherVN
+                <span class="absolute -bottom-1 left-0 w-full h-1 bg-yellow-300 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm"></span>
+            </span>
         </a>
-        <div class="hidden md:flex space-x-6 text-gray-700">
-            <a href="{{ url_for('main_bp.route_home') }}" class="hover:text-blue-600">Trang chủ</a>
-            <a href="{{ url_for('forecast_bp.route_forecast') }}" class="hover:text-blue-600">Dự báo thời tiết</a>
-            <a href="{{ url_for('storm_bp.route_storm') }}" class="hover:text-blue-600">Dự báo bão</a>
-            <a href="{{ url_for('main_bp.route_news') }}" class="hover:text-blue-600">Tin tức</a>
+
+        <div class="hidden lg:flex space-x-10 text-white font-semibold">
+            <a href="{{ url_for('main_bp.route_home') }}" class="nav-item">Trang chủ</a>
+            <a href="{{ url_for('forecast_bp.route_forecast') }}" class="nav-item">Dự báo thời tiết</a>
+            <a href="{{ url_for('storm_bp.route_storm') }}" class="nav-item">Dự báo bão</a>
+            <a href="{{ url_for('main_bp.route_news') }}" class="nav-item">Tin tức</a>
         </div>
-        <button id="menu-toggle" class="md:hidden">
-            <i data-lucide="menu" class="w-6 h-6 text-gray-700"></i>
+
+        <button id="menu-toggle" class="lg:hidden p-2 rounded-full text-white hover:bg-white/20 transition-colors duration-300 focus:outline-none">
+            <svg id="menu-icon-open" class="w-7 h-7 transition-opacity duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+            </svg>
+            <svg id="menu-icon-close" class="w-7 h-7 absolute transition-opacity duration-300 opacity-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
         </button>
     </nav>
-    <div id="mobile-menu" class="md:hidden hidden bg-white border-t p-4 space-y-2">
-        <a href="{{ url_for('main_bp.route_home') }}" class="block hover:text-blue-600">Trang chủ</a>
-        <a href="{{ url_for('forecast_bp.route_forecast') }}" class="block hover:text-blue-600">Dự báo thời tiết</a>
-        <a href="{{ url_for('storm_bp.route_storm') }}" class="block hover:text-blue-600">Dự báo bão</a>
-        <a href="{{ url_for('main_bp.route_news') }}" class="block hover:text-blue-600">Tin tức</a>
+
+    <div id="mobile-menu" class="lg:hidden h-0 overflow-hidden transition-all duration-500 ease-in-out bg-gray-800/95 backdrop-blur-sm">
+        <div class="container mx-auto px-4 py-4 space-y-2">
+            <a href="{{ url_for('main_bp.route_home') }}" class="mobile-nav-item">Trang chủ</a>
+            <a href="{{ url_for('forecast_bp.route_forecast') }}" class="mobile-nav-item">Dự báo thời tiết</a>
+            <a href="{{ url_for('storm_bp.route_storm') }}" class="mobile-nav-item">Dự báo bão</a>
+            <a href="{{ url_for('main_bp.route_news') }}" class="mobile-nav-item">Tin tức</a>
+        </div>
     </div>
+
+    <style>
+        /* Modern hover effect for desktop menu items */
+        .nav-item {
+            position: relative;
+            padding: 8px 0;
+            color: white;
+            transition: all 0.3s ease-in-out;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0); 
+        }
+
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 3px; 
+            /* Màu gạch chân giữ nguyên xanh để tạo sự hài hòa với nền */
+            background: linear-gradient(90deg, #60A5FA, #3B82F6); 
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform: translateX(-50%);
+            border-radius: 2px;
+            box-shadow: 0 0 8px rgba(59, 130, 246, 0);
+        }
+
+        .nav-item:hover {
+            /* Đổi màu hover chữ menu thành vàng nhạt để nổi bật hơn */
+            color: #FDE68A; /* yellow-200 */ 
+            text-shadow: 0 0 10px rgba(253, 230, 138, 0.8); /* Text glow on hover */
+        }
+
+        .nav-item:hover::after {
+            width: 100%;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.8);
+        }
+
+        /* Mobile nav item styling */
+        .mobile-nav-item {
+            display: block;
+            color: #E5E7EB; 
+            font-weight: 500; 
+            padding: 10px 16px;
+            border-radius: 8px;
+            transition: background-color 0.3s, color 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mobile-nav-item:hover {
+            background-color: #374151; 
+            color: #FFFFFF;
+        }
+    </style>
+
     <script>
-        document.getElementById('menu-toggle').addEventListener('click', () => {
-            document.getElementById('mobile-menu').classList.toggle('hidden');
+        // ... (Giữ nguyên JavaScript) ...
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.getElementById('menu-toggle');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const menuIconOpen = document.getElementById('menu-icon-open');
+            const menuIconClose = document.getElementById('menu-icon-close');
+
+            menuToggle.addEventListener('click', () => {
+                const isMenuOpen = mobileMenu.classList.contains('menu-open');
+
+                if (isMenuOpen) {
+                    // Close menu
+                    mobileMenu.style.height = '0';
+                    mobileMenu.classList.remove('menu-open');
+                    
+                    // Icon transition: X to Burger
+                    menuIconClose.classList.remove('opacity-100');
+                    menuIconClose.classList.add('opacity-0');
+                    setTimeout(() => {
+                        menuIconClose.classList.add('absolute');
+                        menuIconOpen.classList.remove('absolute');
+                        menuIconOpen.classList.remove('opacity-0');
+                        menuIconOpen.classList.add('opacity-100');
+                    }, 150); // Delay to sync with opacity transition
+                } else {
+                    // Open menu
+                    // Set height dynamically based on content (or a fixed max-height)
+                    mobileMenu.style.height = mobileMenu.scrollHeight + 'px';
+                    mobileMenu.classList.add('menu-open');
+
+                    // Icon transition: Burger to X
+                    menuIconOpen.classList.remove('opacity-100');
+                    menuIconOpen.classList.add('opacity-0');
+                    setTimeout(() => {
+                        menuIconOpen.classList.add('absolute');
+                        menuIconClose.classList.remove('absolute');
+                        menuIconClose.classList.remove('opacity-0');
+                        menuIconClose.classList.add('opacity-100');
+                    }, 150);
+                }
+            });
+            
+            // Clean up height when window resizes to desktop view
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 1024) {
+                    mobileMenu.style.height = '0';
+                    mobileMenu.classList.remove('menu-open');
+                    
+                    // Reset icon state if it was open
+                    menuIconOpen.classList.remove('absolute', 'opacity-0');
+                    menuIconClose.classList.add('absolute', 'opacity-0');
+                }
+            });
         });
     </script>
 </header>

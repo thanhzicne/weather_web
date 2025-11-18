@@ -1,0 +1,8 @@
+{
+    "python.analysis.extraPaths": [
+        "."
+    ],
+    "python.defaultInterpreterPath": "./venv/Scripts/python.exe",  // nếu bạn dùng venv
+    "python.linting.pylance.enabled": true,
+    "python.linting.enabled": true
+}

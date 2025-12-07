@@ -1,58 +1,453 @@
 {% extends "layout.html" %}
-{% block title %}Biểu đồ thời tiết - WeatherVN{% endblock %}
+{% block title %}Xu hướng Thời tiết - WeatherVN{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8 max-w-6xl">
-    <h1 class="text-4xl font-bold text-center text-white mb-10 drop-shadow-lg">
-        Biểu đồ nhiệt độ 7 ngày tới - Hà Nội
-    </h1>
+<div class="fixed inset-0 -z-10 h-full w-full bg-gradient-to-br from-blue-50 via-blue-100 to-purple-100 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900">
+    <div class="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 rounded-full bg-blue-400/20 blur-3xl animate-blob"></div>
+    <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-purple-400/20 blur-3xl animate-blob animation-delay-2000"></div>
+</div>
 
-    <div class="bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white/20">
-        <canvas id="weatherChart" height="100"></canvas>
+<div class="min-h-screen container mx-auto px-4 py-8 max-w-7xl">
+    
+    <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-12 animate-fade-in-up">
+        <div class="text-center md:text-left">
+            <!-- <a href="/" class="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:underline mb-2 transition-all font-medium">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Trang chủ
+            </a> -->
+            <h1 class="text-4xl lg:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 pb-2">
+                Xu hướng Thời tiết
+            </h1>
+            <p class="text-gray-600 dark:text-gray-300 mt-1 text-lg" id="subTitle">Phân tích dữ liệu khí hậu 12 tháng</p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-3 bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl p-3 rounded-[1.5rem] border border-white/50 dark:border-gray-600/50 shadow-xl">
+            <div class="relative group">
+                <i data-lucide="map-pin" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-blue-500 z-10"></i>
+                <select id="provinceSelect" class="pl-12 pr-10 py-3 bg-white/60 dark:bg-gray-900/60 border border-transparent dark:border-gray-700 rounded-2xl text-gray-800 dark:text-white font-medium focus:ring-4 focus:ring-blue-500/20 outline-none hover:bg-white/80 dark:hover:bg-gray-800 transition-colors appearance-none min-w-[200px] cursor-pointer">
+                    <option value="">Đang tải...</option>
+                </select>
+                <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none z-10"></i>
+            </div>
+
+            <button onclick="detectUserLocation()" title="Vị trí của tôi" class="p-3 bg-white/60 dark:bg-gray-900/60 hover:bg-blue-500 hover:text-white dark:hover:bg-blue-600 text-blue-500 rounded-2xl transition-all shadow-sm group border border-transparent dark:border-gray-700">
+                <i data-lucide="crosshair" class="w-5 h-5 group-hover:rotate-45 transition-transform"></i>
+            </button>
+
+            <div class="w-px h-8 bg-gray-300 dark:bg-gray-600 mx-1"></div>
+
+            <div class="relative group">
+                <i data-lucide="calendar" class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-500 z-10"></i>
+                <select id="yearSelect" class="pl-12 pr-10 py-3 bg-white/60 dark:bg-gray-900/60 border border-transparent dark:border-gray-700 rounded-2xl text-gray-800 dark:text-white font-medium focus:ring-4 focus:ring-purple-500/20 outline-none hover:bg-white/80 dark:hover:bg-gray-800 transition-colors appearance-none cursor-pointer">
+                    <option value="2025" selected>2025</option> <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                </select>
+                <i data-lucide="chevron-down" class="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none z-10"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-8 animate-fade-in-up" style="animation-delay: 0.2s;">
+        <div class="lg:col-span-3 bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl border border-white/50 dark:border-gray-600/50 rounded-[2rem] p-8 shadow-2xl relative">
+            <div class="flex items-center gap-3 mb-6">
+                <button onclick="switchChartMode('climograph')" id="btn-climograph" class="chart-tab active px-5 py-2 rounded-2xl text-sm font-bold transition-all bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg shadow-orange-500/30 transform hover:scale-105">
+                    🌡️ Nhiệt độ & Mưa
+                </button>
+                <button onclick="switchChartMode('wind')" id="btn-wind" class="chart-tab px-5 py-2 rounded-2xl text-sm font-bold transition-all bg-white/50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600">
+                    💨 Gió & Độ ẩm
+                </button>
+            </div>
+            <div class="h-[400px] w-full">
+                <canvas id="mainChart"></canvas>
+            </div>
+            <!-- <div class="absolute top-8 right-8 text-xs text-gray-500 dark:text-gray-400 italic">
+                *Dữ liệu từ Open-Meteo
+            </div> -->
+        </div>
+
+        <div class="lg:col-span-1 space-y-6">
+            <div class="bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl border border-white/50 dark:border-gray-600/50 rounded-[2rem] p-6 shadow-2xl h-full">
+                <h3 class="text-gray-500 dark:text-gray-400 text-xs font-bold uppercase tracking-widest mb-6">Điểm nhấn năm</h3>
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between group">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 rounded-2xl bg-red-100 dark:bg-red-900/30 text-red-500 dark:text-red-400 group-hover:scale-110 transition-transform"><i data-lucide="thermometer-sun" class="w-6 h-6"></i></div>
+                            <div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Nóng nhất</p>
+                                <p class="text-gray-800 dark:text-white font-bold text-lg" id="hottestMonth">--</p>
+                            </div>
+                        </div>
+                        <span class="text-red-500 dark:text-red-400 font-extrabold text-xl" id="hottestTemp">--°</span>
+                    </div>
+                    <div class="w-full h-px bg-gray-200 dark:bg-gray-700"></div>
+                    <div class="flex items-center justify-between group">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 rounded-2xl bg-blue-100 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 group-hover:scale-110 transition-transform"><i data-lucide="snowflake" class="w-6 h-6"></i></div>
+                            <div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Lạnh nhất</p>
+                                <p class="text-gray-800 dark:text-white font-bold text-lg" id="coldestMonth">--</p>
+                            </div>
+                        </div>
+                        <span class="text-blue-500 dark:text-blue-400 font-extrabold text-xl" id="coldestTemp">--°</span>
+                    </div>
+                    <div class="w-full h-px bg-gray-200 dark:bg-gray-700"></div>
+                    <div class="flex items-center justify-between group">
+                        <div class="flex items-center gap-4">
+                            <div class="p-3 rounded-2xl bg-cyan-100 dark:bg-cyan-900/30 text-cyan-500 dark:text-cyan-400 group-hover:scale-110 transition-transform"><i data-lucide="cloud-rain" class="w-6 h-6"></i></div>
+                            <div>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Mưa nhiều</p>
+                                <p class="text-gray-800 dark:text-white font-bold text-lg" id="wettestMonth">--</p>
+                            </div>
+                        </div>
+                        <span class="text-cyan-600 dark:text-cyan-400 font-extrabold text-sm" id="wettestRain">--mm</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white/40 dark:bg-gray-800/40 backdrop-blur-xl border border-white/50 dark:border-gray-600/50 rounded-[2rem] p-8 shadow-2xl animate-fade-in-up" style="animation-delay: 0.4s;">
+        <h3 class="text-gray-800 dark:text-white font-bold text-xl mb-6 flex items-center gap-3">
+            <div class="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-xl text-purple-600"><i data-lucide="table" class="w-5 h-5"></i></div>
+            Tóm tắt chỉ số trung bình năm
+        </h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="text-gray-500 dark:text-gray-400 text-sm border-b border-gray-200 dark:border-gray-700">
+                        <th class="py-4 font-semibold uppercase tracking-wider">Chỉ số</th>
+                        <th class="py-4 font-semibold text-right text-red-500 dark:text-red-400">Cao nhất</th>
+                        <th class="py-4 font-semibold text-right text-yellow-600 dark:text-yellow-400">Trung bình</th>
+                        <th class="py-4 font-semibold text-right text-blue-500 dark:text-blue-400">Thấp nhất</th>
+                    </tr>
+                </thead>
+                <tbody class="text-gray-700 dark:text-gray-200 font-medium">
+                    <tr class="border-b border-gray-200/50 dark:border-gray-700/50 hover:bg-white/30 dark:hover:bg-gray-700/30 transition-colors">
+                        <td class="py-5 flex items-center gap-3"><i data-lucide="thermometer" class="w-5 h-5 text-gray-400"></i> Nhiệt độ (°C)</td>
+                        <td class="py-5 text-right font-bold text-lg" id="stat-temp-max">--</td>
+                        <td class="py-5 text-right" id="stat-temp-avg">--</td>
+                        <td class="py-5 text-right" id="stat-temp-min">--</td>
+                    </tr>
+                    <tr class="border-b border-gray-200/50 dark:border-gray-700/50 hover:bg-white/30 dark:hover:bg-gray-700/30 transition-colors">
+                        <td class="py-5 flex items-center gap-3"><i data-lucide="droplets" class="w-5 h-5 text-gray-400"></i> Lượng mưa (mm)</td>
+                        <td class="py-5 text-right font-bold text-lg" id="stat-rain-max">--</td>
+                        <td class="py-5 text-right" id="stat-rain-avg">--</td>
+                        <td class="py-5 text-right text-sm text-gray-400">0</td>
+                    </tr>
+                    <tr class="border-b border-gray-200/50 dark:border-gray-700/50 hover:bg-white/30 dark:hover:bg-gray-700/30 transition-colors">
+                        <td class="py-5 flex items-center gap-3"><i data-lucide="wind" class="w-5 h-5 text-gray-400"></i> Tốc độ gió (km/h)</td>
+                        <td class="py-5 text-right font-bold text-lg" id="stat-wind-max">--</td>
+                        <td class="py-5 text-right" id="stat-wind-avg">--</td>
+                        <td class="py-5 text-right" id="stat-wind-min">--</td>
+                    </tr>
+                    <tr class="hover:bg-white/30 dark:hover:bg-gray-700/30 transition-colors">
+                        <td class="py-5 flex items-center gap-3"><i data-lucide="droplet" class="w-5 h-5 text-gray-400"></i> Độ ẩm (%)</td>
+                        <td class="py-5 text-right font-bold text-lg" id="stat-humid-max">--</td>
+                        <td class="py-5 text-right" id="stat-humid-avg">--</td>
+                        <td class="py-5 text-right" id="stat-humid-min">--</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
+<style>
+    select option { background-color: #1f2937; color: white; padding: 10px; }
+    .chart-tab.active { box-shadow: 0 10px 15px -3px rgba(249, 115, 22, 0.3); }
+    @keyframes fade-in-up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in-up { animation: fade-in-up 0.8s ease-out forwards; }
+    @keyframes blob { 0% { transform: translate(0px, 0px) scale(1); } 33% { transform: translate(30px, -50px) scale(1.1); } 66% { transform: translate(-20px, 20px) scale(0.9); } 100% { transform: translate(0px, 0px) scale(1); } }
+    .animate-blob { animation: blob 7s infinite; }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://unpkg.com/lucide@latest"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const ctx = document.getElementById('weatherChart').getContext('2d');
-    
-    new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['Hôm nay', 'Ngày mai', '3', '4', '5', '6', '7'],
-            datasets: [{
-                label: 'Nhiệt độ (°C)',
-                data: [28, 30, 29, 31, 27, 26, 29],
-                borderColor: '#FBBF24',
-                backgroundColor: 'rgba(251, 191, 36, 0.2)',
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: '#FFF',
-                pointBorderColor: '#F59E0B',
-                pointHoverRadius: 8,
-                pointRadius: 6
-            }]
-        },
-        options: {
-            responsive: true,
-            
-            plugins: {
-                legend: { labels: { color: 'white', font: { size: 16 } } }
-            },
-            scales: {
-                y: { 
-                    beginAtZero: false,
-                    grid: { color: 'rgba(255,255,255,0.1)' },
-                    ticks: { color: 'white' }
+    let mainChart = null;
+    let currentData = null; // Đây sẽ là mảng chuẩn 12 tháng (có null)
+    let rawData = null;     // Đây là dữ liệu thô từ API (để tính thống kê)
+    let currentMode = 'climograph'; 
+    let allProvinces = [];
+
+    // Danh sách nhãn cố định cho 12 tháng
+    const MONTH_LABELS = [
+        "Tháng 1", "Tháng 2", "Tháng 3", "Tháng 4", "Tháng 5", "Tháng 6",
+        "Tháng 7", "Tháng 8", "Tháng 9", "Tháng 10", "Tháng 11", "Tháng 12"
+    ];
+
+    document.addEventListener('DOMContentLoaded', async function () {
+        lucide.createIcons();
+        await loadProvinces();
+        
+        const located = await detectUserLocation(true);
+        if (!located) {
+            updateDashboard(); 
+        }
+
+        document.getElementById('provinceSelect').addEventListener('change', updateDashboard);
+        document.getElementById('yearSelect').addEventListener('change', updateDashboard);
+    });
+
+    async function loadProvinces() {
+        try {
+            const res = await fetch('/api/provinces');
+            allProvinces = await res.json();
+            const select = document.getElementById('provinceSelect');
+            select.innerHTML = '';
+            allProvinces.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.province_id || p.id;
+                opt.textContent = p.name;
+                select.appendChild(opt);
+            });
+        } catch(e) { console.error(e); }
+    }
+
+    async function detectUserLocation(isAuto = false) {
+        if (!navigator.geolocation) {
+            if(!isAuto) alert("Trình duyệt không hỗ trợ định vị.");
+            return false;
+        }
+        return new Promise(resolve => {
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const { latitude, longitude } = pos.coords;
+                    let nearest = null, minDist = Infinity;
+                    if(allProvinces.length === 0) { resolve(false); return; }
+
+                    allProvinces.forEach(p => {
+                        const d = Math.sqrt(Math.pow((p.latitude||p.lat)-latitude, 2) + Math.pow((p.longitude||p.lon)-longitude, 2));
+                        if(d < minDist) { minDist = d; nearest = p; }
+                    });
+
+                    if(nearest) {
+                        document.getElementById('provinceSelect').value = nearest.province_id || nearest.id;
+                        updateDashboard();
+                        resolve(true);
+                    } else resolve(false);
                 },
-                x: { 
-                    grid: { color: 'rgba(255,255,255,0.1)' },
-                    ticks: { color: 'white' }
+                () => { if(!isAuto) alert("Không lấy được vị trí."); resolve(false); }
+            );
+        });
+    }
+
+    async function updateDashboard() {
+        const pid = document.getElementById('provinceSelect').value;
+        const year = document.getElementById('yearSelect').value;
+        const pName = document.getElementById('provinceSelect').options[document.getElementById('provinceSelect').selectedIndex]?.text;
+        
+        document.getElementById('subTitle').textContent = `Dữ liệu khí hậu tại ${pName} - Năm ${year}`;
+
+        try {
+            const res = await fetch(`/api/weather-monthly?province_id=${pid}&year=${year}`);
+            const data = await res.json(); // Data này có thể thiếu tháng (vd: chỉ có tháng 1,2)
+
+            if(!data || data.length === 0) {
+                if(mainChart) mainChart.destroy();
+                // Reset biểu đồ về trống nếu muốn, hoặc báo lỗi
+                return;
+            }
+
+            rawData = data; // Lưu dữ liệu gốc (để tính max/min)
+
+            // 2. CHUẨN HÓA DỮ LIỆU THÀNH 12 THÁNG
+            // Tạo mảng đối tượng 12 tháng, mặc định là null
+            const normalizedData = new Array(12).fill(null).map((_, i) => ({
+                month: i + 1,
+                avg_temp: null,
+                total_rain: null,
+                avg_wind: null,
+                avg_humidity: null
+            }));
+
+            // Điền dữ liệu thật vào đúng vị trí tháng
+            data.forEach(item => {
+                const index = item.month - 1; // Tháng 1 là index 0
+                if (index >= 0 && index < 12) {
+                    normalizedData[index] = item;
+                }
+            });
+
+            currentData = normalizedData; // Dữ liệu đã chuẩn hóa (có null ở tháng tương lai)
+            
+            renderChart(currentMode); 
+            calculateStats(rawData); // Tính thống kê chỉ dựa trên dữ liệu CÓ THẬT (rawData)
+
+        } catch(e) { console.error(e); }
+    }
+
+    function calculateStats(data) {
+        if (!data || data.length === 0) return;
+
+        // Chỉ tính toán trên data thực (rawData), không dùng mảng có null
+        const temps = data.map(d => d.avg_temp);
+        const rains = data.map(d => d.total_rain);
+        const winds = data.map(d => d.avg_wind);
+        const humids = data.map(d => d.avg_humidity);
+
+        const maxTempMonth = data.reduce((prev, curr) => (prev.avg_temp > curr.avg_temp) ? prev : curr, data[0]);
+        const minTempMonth = data.reduce((prev, curr) => (prev.avg_temp < curr.avg_temp) ? prev : curr, data[0]);
+        const maxRainMonth = data.reduce((prev, curr) => (prev.total_rain > curr.total_rain) ? prev : curr, data[0]);
+
+        if (maxTempMonth) {
+            document.getElementById('hottestMonth').textContent = `Tháng ${maxTempMonth.month}`;
+            document.getElementById('hottestTemp').textContent = `${maxTempMonth.avg_temp}°C`;
+        }
+        if (minTempMonth) {
+            document.getElementById('coldestMonth').textContent = `Tháng ${minTempMonth.month}`;
+            document.getElementById('coldestTemp').textContent = `${minTempMonth.avg_temp}°C`;
+        }
+        if (maxRainMonth) {
+            document.getElementById('wettestMonth').textContent = `Tháng ${maxRainMonth.month}`;
+            document.getElementById('wettestRain').textContent = `${maxRainMonth.total_rain}mm`;
+        }
+
+        fillRow('temp', temps);
+        fillRow('rain', rains);
+        fillRow('wind', winds);
+        fillRow('humid', humids);
+    }
+
+    function fillRow(id, arr) {
+        const validData = arr.filter(v => v !== null && v !== undefined && !isNaN(v));
+        if (validData.length === 0) {
+            document.getElementById(`stat-${id}-max`).textContent = "--";
+            document.getElementById(`stat-${id}-min`).textContent = "--";
+            document.getElementById(`stat-${id}-avg`).textContent = "--";
+            return;
+        }
+        const max = Math.max(...validData).toFixed(1);
+        const min = Math.min(...validData).toFixed(1);
+        const sum = validData.reduce((a, b) => a + b, 0);
+        const avg = (sum / validData.length).toFixed(1);
+        
+        document.getElementById(`stat-${id}-max`).textContent = max;
+        document.getElementById(`stat-${id}-min`).textContent = min;
+        document.getElementById(`stat-${id}-avg`).textContent = avg;
+    }
+
+    function switchChartMode(mode) {
+        currentMode = mode;
+        const btnClimograph = document.getElementById('btn-climograph');
+        const btnWind = document.getElementById('btn-wind');
+
+        if (mode === 'climograph') {
+            btnClimograph.className = "chart-tab active px-5 py-2 rounded-2xl text-sm font-bold transition-all bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg shadow-orange-500/30 transform scale-105";
+            btnWind.className = "chart-tab px-5 py-2 rounded-2xl text-sm font-bold transition-all bg-white/50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600";
+        } else {
+            btnWind.className = "chart-tab active px-5 py-2 rounded-2xl text-sm font-bold transition-all bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg shadow-pink-500/30 transform scale-105";
+            btnClimograph.className = "chart-tab px-5 py-2 rounded-2xl text-sm font-bold transition-all bg-white/50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600";
+        }
+        if(currentData) renderChart(mode);
+    }
+
+    function renderChart(mode) {
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        if (mainChart) mainChart.destroy();
+
+        // 3. SỬ DỤNG DỮ LIỆU ĐÃ CHUẨN HÓA (có null)
+        // Chart.js mặc định sẽ bỏ qua các điểm null (không vẽ nối tiếp nếu spanGaps: false)
+        
+        let datasets = [];
+        let yScales = {};
+
+        if (mode === 'climograph') {
+            datasets = [
+                {
+                    label: 'Lượng mưa (mm)',
+                    data: currentData.map(d => d.total_rain), // Chứa null ở tháng tương lai
+                    backgroundColor: 'rgba(59, 130, 246, 0.6)', 
+                    borderColor: '#3b82f6',
+                    borderWidth: 1,
+                    type: 'bar',
+                    yAxisID: 'y_bar',
+                    order: 2,
+                    borderRadius: 6
+                },
+                {
+                    label: 'Nhiệt độ (°C)',
+                    data: currentData.map(d => d.avg_temp), // Chứa null
+                    borderColor: '#fbbf24', 
+                    backgroundColor: 'rgba(251, 191, 36, 0.2)',
+                    type: 'line',
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#fbbf24',
+                    borderWidth: 3,
+                    yAxisID: 'y_line',
+                    order: 1,
+                    fill: true,
+                    spanGaps: false // QUAN TRỌNG: Không nối điểm nếu gặp null
+                }
+            ];
+            yScales = {
+                y_line: { type: 'linear', position: 'left', title: {display: true, text: 'Nhiệt độ (°C)', color:'#fbbf24'}, grid: {color: 'rgba(255,255,255,0.05)'}, ticks: {color: '#9ca3af'} },
+                y_bar: { type: 'linear', position: 'right', title: {display: true, text: 'Mưa (mm)', color:'#3b82f6'}, grid: {drawOnChartArea: false}, ticks: {color: '#93c5fd'} }
+            };
+        } else {
+            datasets = [
+                {
+                    label: 'Độ ẩm (%)',
+                    data: currentData.map(d => d.avg_humidity),
+                    borderColor: '#22d3ee',
+                    backgroundColor: 'rgba(34, 211, 238, 0.15)',
+                    pointBackgroundColor: '#fff',
+                    pointBorderColor: '#22d3ee',
+                    type: 'line',
+                    tension: 0.4,
+                    fill: true,
+                    yAxisID: 'y_humid',
+                    borderWidth: 3,
+                    spanGaps: false
+                },
+                {
+                    label: 'Tốc độ gió (km/h)',
+                    data: currentData.map(d => d.avg_wind),
+                    borderColor: '#e879f9',
+                    backgroundColor: 'rgba(232, 121, 249, 0.2)',
+                    type: 'line',
+                    tension: 0.4,
+                    borderDash: [6, 6],
+                    yAxisID: 'y_wind',
+                    borderWidth: 2,
+                    spanGaps: false
+                }
+            ];
+            yScales = {
+                y_humid: { type: 'linear', position: 'left', title: {display: true, text: 'Độ ẩm (%)', color:'#22d3ee'}, min: 0, max: 100, grid: {color: 'rgba(255,255,255,0.05)'}, ticks: {color: '#a5f3fc'} },
+                y_wind: { type: 'linear', position: 'right', title: {display: true, text: 'Gió (km/h)', color:'#e879f9'}, grid: {drawOnChartArea: false}, ticks: {color: '#f0abfc'} }
+            };
+        }
+
+        mainChart = new Chart(ctx, {
+            data: { labels: MONTH_LABELS, datasets: datasets }, // Luôn dùng 12 nhãn tháng
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: { mode: 'index', intersect: false },
+                plugins: {
+                    legend: { labels: { color: '#e5e7eb', usePointStyle: true, font: {family: 'sans-serif', size: 12} } },
+                    tooltip: {
+                        backgroundColor: 'rgba(17, 24, 39, 0.9)', 
+                        titleColor: '#f3f4f6',
+                        bodyColor: '#e5e7eb',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                        borderWidth: 1,
+                        padding: 12,
+                        cornerRadius: 12,
+                        displayColors: true
+                    }
+                },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#9ca3af' } },
+                    ...yScales
                 }
             }
-        }
-    });
-});
+        });
+    }
 </script>
 {% endblock %}

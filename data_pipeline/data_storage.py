@@ -192,7 +192,56 @@ def insert_air_quality_data(conn, df):
     finally:
         if cursor:
             cursor.close()
+# data_pipeline/data_storage.py
+# Hàm lấy thống kê thời tiết theo tháng cho một tỉnh trong một năm cụ thể
 
+# data_pipeline/data_storage.py
+
+def get_monthly_weather_stats(conn, province_id, year):
+    """
+    Lấy thống kê thời tiết theo tháng.
+    Sử dụng COALESCE để đảm bảo không bị lỗi NULL nếu dữ liệu thiếu.
+    """
+    sql = """
+        SELECT 
+            EXTRACT(MONTH FROM "timestamp") as month,
+            -- Nhiệt độ trung bình (Làm tròn 1 số thập phân)
+            ROUND(AVG(COALESCE(temperature_2m, 0))::numeric, 1) as avg_temp,
+            
+            -- Tổng lượng mưa (SUM)
+            ROUND(SUM(COALESCE(precipitation, 0))::numeric, 1) as total_rain,
+            
+            -- Độ ẩm trung bình
+            ROUND(AVG(COALESCE(relative_humidity_2m, 0))::numeric, 1) as avg_humidity,
+            
+            -- Tốc độ gió trung bình
+            ROUND(AVG(COALESCE(wind_speed_10m, 0))::numeric, 1) as avg_wind
+        FROM weather_data 
+        WHERE province_id = %s 
+        AND EXTRACT(YEAR FROM "timestamp") = %s
+        GROUP BY month
+        ORDER BY month ASC;
+    """
+    try:
+        with conn.cursor() as cur:
+            cur.execute(sql, (province_id, year))
+            rows = cur.fetchall()
+            
+            result = []
+            for row in rows:
+                result.append({
+                    "month": int(row[0]),
+                    "avg_temp": float(row[1]) if row[1] is not None else 0,
+                    "total_rain": float(row[2]) if row[2] is not None else 0,
+                    "avg_humidity": float(row[3]) if row[3] is not None else 0,
+                    "avg_wind": float(row[4]) if row[4] is not None else 0
+                })
+            return result
+    except Exception as e:
+        print(f"Lỗi lấy thống kê tháng: {e}")
+        return []
+
+# =============================================================================
 # --- VÍ DỤ MINH HỌA (Giữ lại nếu bạn muốn test logic flagging/insert) ---
 if __name__ == '__main__':
     # ... (giữ nguyên hoặc xóa phần test tùy ý)

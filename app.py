@@ -38,9 +38,9 @@ except ImportError as e:
 # ============================================================================
 # CẤU HÌNH DATABASE
 # ============================================================================
-DB_USERNAME = "postgres"
+DB_USERNAME = "thanh"
 # Mật khẩu bạn dùng để đăng nhập vào pgAdmin (nếu là 123456 thì giữ nguyên)
-DB_PASSWORD = os.environ.get('DB_PASSWORD', '123456') 
+DB_PASSWORD = os.environ.get('DB_PASSWORD', 'matkhaula123') 
 
 DB_HOST = "localhost"       # Host mặc định
 DB_PORT = "5432"            # Cổng mặc định của PostgreSQL

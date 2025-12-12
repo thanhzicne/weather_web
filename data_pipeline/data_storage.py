@@ -10,8 +10,8 @@ DB_CONFIG = {
     "host": "localhost",         # Chạy trên máy cá nhân
     "port": 5432,                # Cổng mặc định PostgreSQL
     "dbname": "weather_project", # Tên database bạn vừa tạo trong pgAdmin
-    "user": "postgres",          # Username mặc định
-    "password": "123456"         # Mật khẩu của bạn (hãy đổi nếu khác)
+    "user": "thanh",          # Username mặc định
+    "password": "matkhaula123"         # Mật khẩu của bạn (hãy đổi nếu khác)
 }
 
 # --- HẰNG SỐ CẢNH BÁO ---

@@ -22,7 +22,14 @@ forecast_bp = Blueprint('forecast_bp', __name__)
 
 # --- CẤU HÌNH DATABASE CHO CONTROLLER ---
 # Lưu ý: Thay 'password' bằng mật khẩu thực của bạn
-DB_URI = "postgresql://postgres:password@localhost:5432/weather_db"
+# --- CẤU HÌNH DATABASE CHO CONTROLLER ---
+DB_USER = "thanh"
+DB_PASS = "matkhaula123"
+DB_NAME = "weather_project" # Lưu ý: Tên DB là weather_project, không phải weather_db
+DB_HOST = "localhost"
+
+# Tạo chuỗi kết nối chuẩn
+DB_URI = f"postgresql://{DB_USER}:{DB_PASS}@{DB_HOST}:5432/{DB_NAME}"
 db_engine = create_engine(DB_URI)
 
 @forecast_bp.route('/forecast')

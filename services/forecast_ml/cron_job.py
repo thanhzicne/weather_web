@@ -25,8 +25,8 @@ DB_CONFIG = {
     "host": "localhost",
     "port": 5432,
     "dbname": "weather_project", # Tên database
-    "user": "postgres",          # Username
-    "password": "123456"         # Mật khẩu
+    "user": "thanh",          # Username
+    "password": "matkhaula123"         # Mật khẩu
 }
 
 # Tạo chuỗi kết nối cho SQLAlchemy
